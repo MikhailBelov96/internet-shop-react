@@ -16,6 +16,7 @@ function App() {
           <div className="headerInfo">
             <h3>Sneakers World</h3>
             <p>The best sneakers in the world!</p>
+            <p>The best sneakers in the world!</p>
           </div>
         </div>
         <ul className="headerRight">
