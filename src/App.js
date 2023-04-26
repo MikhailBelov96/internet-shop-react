@@ -3,9 +3,9 @@ import React from "react";
 import Drawer from "./components/drawer";
 import AppContext from "./context";
 
-import Home from "./pages/Home";
-import Favorites from "./pages/Favorites";
-import Orders from "./pages/Orders";
+import Home from "./pages/home";
+import Favorites from "./pages/favorites";
+import Orders from "./pages/orders";
 
 function App() {
   return (
