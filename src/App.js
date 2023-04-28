@@ -1,5 +1,7 @@
 import React from "react";
-
+import { Route, Routes } from "react-router-dom";
+import axios from "axios";
+import Header from "./components/header";
 import Drawer from "./components/drawer";
 import AppContext from "./context";
 
@@ -19,7 +21,11 @@ function App() {
     async function fetchData() {
       try {
         const [cartResponse, favoritesResponse, itemsResponse] =
-          await Promise.all([]);
+          await Promise.all([
+            axios.get("https://60d62397943aa60017768e77.mockapi.io/cart"),
+            axios.get("https://60d62397943aa60017768e77.mockapi.io/favorites"),
+            axios.get("https://60d62397943aa60017768e77.mockapi.io/items"),
+          ]);
 
         setIsLoading(false);
         setCartItems(cartResponse.data);
@@ -33,6 +39,76 @@ function App() {
 
     fetchData();
   }, []);
+
+  const onAddToCart = async (obj) => {
+    try {
+      const findItem = cartItems.find(
+        (item) => Number(item.parentId) === Number(obj.id)
+      );
+      if (findItem) {
+        setCartItems((prev) =>
+          prev.filter((item) => Number(item.parentId) !== Number(obj.id))
+        );
+        await axios.delete(
+          `https://60d62397943aa60017768e77.mockapi.io/cart/${findItem.id}`
+        );
+      } else {
+        setCartItems((prev) => [...prev, obj]);
+        const { data } = await axios.post(
+          "https://60d62397943aa60017768e77.mockapi.io/cart",
+          obj
+        );
+        setCartItems((prev) =>
+          prev.map((item) => {
+            if (item.parentId === data.parentId) {
+              return {
+                ...item,
+                id: data.id,
+              };
+            }
+            return item;
+          })
+        );
+      }
+    } catch (error) {
+      alert("Ошибка при добавлении в корзину");
+      console.error(error);
+    }
+  };
+
+  const onRemoveItem = (id) => {
+    try {
+      axios.delete(`https://60d62397943aa60017768e77.mockapi.io/cart/${id}`);
+      setCartItems((prev) =>
+        prev.filter((item) => Number(item.id) !== Number(id))
+      );
+    } catch (error) {
+      alert("Ошибка при удалении из корзины");
+      console.error(error);
+    }
+  };
+
+  const onAddToFavorite = async (obj) => {
+    try {
+      if (favorites.find((favObj) => Number(favObj.id) === Number(obj.id))) {
+        axios.delete(
+          `https://60d62397943aa60017768e77.mockapi.io/favorites/${obj.id}`
+        );
+        setFavorites((prev) =>
+          prev.filter((item) => Number(item.id) !== Number(obj.id))
+        );
+      } else {
+        const { data } = await axios.post(
+          "https://60d62397943aa60017768e77.mockapi.io/favorites",
+          obj
+        );
+        setFavorites((prev) => [...prev, data]);
+      }
+    } catch (error) {
+      alert("Не удалось добавить в фавориты");
+      console.error(error);
+    }
+  };
 
   const onChangeSearchInput = (event) => {
     setSearchValue(event.target.value);
@@ -49,6 +125,8 @@ function App() {
         cartItems,
         favorites,
         isItemAdded,
+        onAddToFavorite,
+        onAddToCart,
         setCartOpened,
         setCartItems,
       }}
@@ -63,14 +141,28 @@ function App() {
 
         <Header onClickCart={() => setCartOpened(true)} />
 
-        <Home
-          items={items}
-          cartItems={cartItems}
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
-          onChangeSearchInput={onChangeSearchInput}
-          isLoading={isLoading}
-        />
+        <Routes>
+          <Route path="" exact Component={Home} />
+          {/* <React.Home
+              items={items}
+              cartItems={cartItems}
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              onChangeSearchInput={onChangeSearchInput}
+              onAddToFavorite={onAddToFavorite}
+              onAddToCart={onAddToCart}
+              isLoading={isLoading}
+            />
+          </Route> */}
+
+          <Route path="favorites" Component={Favorites} />
+          {/* <React.Favorites />
+          </Route> */}
+
+          <Route path="orders" Component={Orders} />
+          {/* <React.Orders />
+          </Route> */}
+        </Routes>
       </div>
     </AppContext.Provider>
   );
