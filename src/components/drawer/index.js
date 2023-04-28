@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 
-import Info from "../Info";
+import Info from "../info";
 import { useCart } from "../../hooks/useCart";
 
 import styles from "./drawer.module.scss";
